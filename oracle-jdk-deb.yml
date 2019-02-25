@@ -1,0 +1,6 @@
+---
+- hosts: develop-machine
+
+  tasks:
+  - name: Install oracle jdk 8 
+    shell: ls -ltr

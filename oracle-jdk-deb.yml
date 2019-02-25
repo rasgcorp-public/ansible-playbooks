@@ -1,5 +1,5 @@
 ---
-- hosts: develop-machine
+- hosts: develop_machine
 
   tasks:
   - name: Install oracle jdk 8 

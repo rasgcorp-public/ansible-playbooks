@@ -18,3 +18,7 @@
   - name: Modify name
     shell: 
       mv /opt/apache-maven-3.6.0 /opt/maven
+  
+  - name: Create link
+    shell:
+      ln -s /opt/maven/bin/mvn /usr/bin/mvn

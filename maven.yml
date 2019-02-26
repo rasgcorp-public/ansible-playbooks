@@ -10,7 +10,7 @@
       mode=0755
 
   - name: Extract maven
-    unarchiva: 
+    unarchive: 
       src=/opt/apache-maven-3.6.0-bin.tar.gz
       dest=/opt 
       copy=no

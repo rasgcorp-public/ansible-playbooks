@@ -1,0 +1,10 @@
+---
+  - hosts: develop_machine
+
+    tasks:
+
+    vars_files:
+      - vars/main.yml
+    
+    roles:
+    - createdb

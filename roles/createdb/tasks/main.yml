@@ -14,9 +14,10 @@
   service:
     name=postgresql
     state=started
-    enable=yes
+    enabled=yes
   
 - name: Ensure database is created
+  become_user: postgres
   postgresql_db:
     name={{db_name}}
     encoding='UTF-8'
@@ -26,6 +27,7 @@
     state=present
 
 - name: Ensure user has access to the database
+  become_user: postgres
   postgresql_user:
     db={{db_name}}
     name={{db_user}}
@@ -34,6 +36,7 @@
     state=present
 
 - name: Ensure user does not have unnecessary privileges
+  become_user: postgres
   postgresql_user:
     name={{db_user}}
     role_attr_flags=NOSUPERUSER,NOCREATEDB

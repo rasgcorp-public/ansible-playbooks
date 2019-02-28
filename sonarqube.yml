@@ -36,6 +36,7 @@
     file: path=/opt/sonarqube/ owner=rafael group=rafael recurse=yes
 
   - name: configure systemd for sonarqube
+    become: yes
     shell: |
       echo "[Unit]
             Description=SonarQube service
@@ -49,8 +50,21 @@
             Restart=always
             [Install]
             WantedBy=multi-user.target" >> /etc/systemd/system/sonar.service
-      systemctl daemon-reload
-      systemctl start sonar.service
-      systemctl enable sonar.service
     args:
     register: systemd_sonar
+
+  - name: change mode sonar executable file
+    become: yes
+    file:
+      owner=root
+      group=root
+      path=/etc/systemd/system/sonar.service
+      mode=0755
+
+  - name: configure systemd for sonarqube
+    become: yes
+    shell: 
+      systemctl daemon-reload; systemctl start sonar.service; systemctl enable sonar.service
+
+  - name: Ensure Sonar is running
+    service: name=sonar state=started enabled=yes

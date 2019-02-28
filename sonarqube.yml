@@ -6,52 +6,67 @@
   - name: install sonarqube
     debug: msg="download and install sonarqube"
 
-  - name: download sonarqube tomcat
-    get_url:
-      url=https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-6.7.6.zip
-      dest=/opt/
-      mode=0755
-    args:
-    register: sonarqube_in_place
+  - name: Ensure SonarQube binary exists
+    stat: 
+      path=/opt/sonarqube/bin/linux-x86-64/sonar.sh
+    register: sonar_binary_stat
 
-  - name: Install unzip to unpack sonarqube
-    apt: 
-      name=unzip
-  
-  - name: Extract the package
-    unarchive: src=/opt/sonarqube-6.7.6.zip dest=/opt copy=no
+  - block:
+    - name: download sonarqube tomcat
+      get_url:
+        url=https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-6.7.6.zip
+        dest=/opt/
+        mode=0755
+      args:
+      register: sonarqube_in_place
 
-  - name: Modify folder name sonarqube
-    shell: |
-      cp -rp /opt/sonarqube-6.7.6 /opt/sonarqube
+    - name: Install unzip to unpack sonarqube
+      apt: 
+        name=unzip
+    
+    - name: Extract the package
+      unarchive: src=/opt/sonarqube-6.7.6.zip dest=/opt copy=no
 
-  - name: configure sonarqube for Postgres
-    shell: |
-      echo "
-            sonar.jdbc.username=sonar
-            sonar.jdbc.password=rafael
-            sonar.jdbc.url=jdbc:postgresql://localhost/sonar" >> /opt/sonarqube/conf/sonar.properties
+    - name: Modify folder name sonarqube
+      shell: |
+        cp -rp /opt/sonarqube-6.7.6 /opt/sonarqube
 
-  - name: Set correct ownership for sonarqube
-    file: path=/opt/sonarqube/ owner=rafael group=rafael recurse=yes
+    - name: configure sonarqube for Postgres
+      shell: |
+        echo "
+              sonar.jdbc.username=sonar
+              sonar.jdbc.password=rafael
+              sonar.jdbc.url=jdbc:postgresql://localhost/sonar" >> /opt/sonarqube/conf/sonar.properties
 
-  - name: configure systemd for sonarqube
-    become: yes
-    shell: |
-      echo "[Unit]
-            Description=SonarQube service
-            After=syslog.target network.target
-            [Service]
-            Type=forking
-            ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
-            ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
-            User=rafael
-            Group=rafael
-            Restart=always
-            [Install]
-            WantedBy=multi-user.target" >> /etc/systemd/system/sonar.service
-    args:
-    register: systemd_sonar
+    - name: Set correct ownership for sonarqube
+      file: path=/opt/sonarqube/ owner=rafael group=rafael recurse=yes
+    
+    when: not sonar_binary_stat.stat.exists
+
+  - name: Ensure systemd exists
+    stat: 
+      path=/etc/systemd/system/sonar.service
+    register: systemd_binary_stat
+
+  - block:
+    - name: configure systemd for sonarqube
+      become: yes
+      shell: |
+        echo "[Unit]
+              Description=SonarQube service
+              After=syslog.target network.target
+              [Service]
+              Type=forking
+              ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+              ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+              User=rafael
+              Group=rafael
+              Restart=always
+              [Install]
+              WantedBy=multi-user.target" >> /etc/systemd/system/sonar.service
+      args:
+      register: systemd_sonar
+    when: not systemd_binary_stat.stat.exists
 
   - name: change mode sonar executable file
     become: yes
@@ -61,10 +76,11 @@
       path=/etc/systemd/system/sonar.service
       mode=0755
 
-  - name: configure systemd for sonarqube
-    become: yes
-    shell: 
-      systemctl daemon-reload; systemctl start sonar.service; systemctl enable sonar.service
+  - name: "Ensure SonarQube as init script for service management"
+    file:
+      src: "/opt/sonarqube/bin/linux-x86-64/sonar.sh"
+      dest: /etc/init.d/sonar
+      state: link
 
   - name: Ensure Sonar is running
     service: name=sonar state=started enabled=yes

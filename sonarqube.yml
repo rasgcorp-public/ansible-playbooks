@@ -1,0 +1,52 @@
+---
+- hosts: develop_machine
+  gather_facts: false
+  tasks:
+
+  - name: install sonarqube
+    debug: msg="download and install sonarqube"
+
+  - name: download sonarqube tomcat
+    get_url:
+      url=https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-6.7.6.zip
+      dest=/opt/
+      mode=0755
+    args:
+    register: sonarqube_in_place
+  
+  - name: Extract the package
+    unarchive: src=/opt/sonarqube-6.7.6.zip dest=/opt copy=no
+
+  - name: Modify folder name sonarqube
+    shell: |
+      cp -rp /opt/sonarqube-6.7.6 /opt/sonarqube
+
+  - name: configure sonarqube for Postgres
+    shell: |
+      echo "
+            sonar.jdbc.username=sonar
+            sonar.jdbc.password=rafael
+            sonar.jdbc.url=jdbc:postgresql://localhost/sonar" >> /opt/sonarqube/conf/sonar.properties
+
+  - name: Set correct ownership for sonarqube
+    file: path=/opt/sonarqube/ owner=rafael group=rafael recurse=yes
+
+  - name: configure systemd for sonarqube
+    shell: |
+      echo "[Unit]
+            Description=SonarQube service
+            After=syslog.target network.target
+            [Service]
+            Type=forking
+            ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+            ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+            User=rafael
+            Group=rafael
+            Restart=always
+            [Install]
+            WantedBy=multi-user.target" >> /etc/systemd/system/sonar.service
+      systemctl daemon-reload
+      systemctl start sonar.service
+      systemctl enable sonar.service
+    args:
+    register: systemd_sonar

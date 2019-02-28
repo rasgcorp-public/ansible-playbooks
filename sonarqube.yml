@@ -13,6 +13,10 @@
       mode=0755
     args:
     register: sonarqube_in_place
+
+  - name: Install unzip to unpack sonarqube
+    apt: 
+      name=unzip
   
   - name: Extract the package
     unarchive: src=/opt/sonarqube-6.7.6.zip dest=/opt copy=no

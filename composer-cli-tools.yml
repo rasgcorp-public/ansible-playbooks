@@ -1,5 +1,7 @@
 ---
 - hosts: develop_machine
+  become_user: rafael
+  become: yes
   tasks:
 
   - name: Install CLI Tools for Composer developers

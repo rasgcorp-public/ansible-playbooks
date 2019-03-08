@@ -1,0 +1,8 @@
+---
+  hosts: develop_machine
+  tasks:
+
+  - name: Install CLI Tools for Composer developers
+    shell:       
+      npm install -g generator-hyperledger-composer@0.20
+      npm install -g yo

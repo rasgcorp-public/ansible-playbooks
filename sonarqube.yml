@@ -83,4 +83,6 @@
       state: link
 
   - name: Ensure Sonar is running
+    become: yes
+    become_user: rafael
     service: name=sonar state=started enabled=yes

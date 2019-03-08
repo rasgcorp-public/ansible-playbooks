@@ -1,5 +1,5 @@
 ---
-  hosts: develop_machine
+- hosts: develop_machine
   tasks:
 
   - name: Install CLI Tools for Composer developers

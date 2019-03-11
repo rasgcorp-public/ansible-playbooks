@@ -22,6 +22,11 @@
       name: nodejs
       state: present
 
+  - name: Install build tools
+    apt: 
+      name: build-essential
+      state: present
+
   - name: Manually change npm’s default directory
     become_user: rafael
     become: yes

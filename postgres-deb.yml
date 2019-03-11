@@ -1,6 +1,6 @@
 ---
   - hosts: develop_machine
-
+    become: yes
     tasks:
 
     vars_files:

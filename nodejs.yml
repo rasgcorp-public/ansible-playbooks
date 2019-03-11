@@ -21,3 +21,13 @@
     apt: 
       name: nodejs
       state: present
+
+  - name: Manually change npm’s default directory
+    become_user: rafael
+    become: yes
+    shell: |
+      mkdir ~/.npm-global
+      npm config set prefix '~/.npm-global'
+      export PATH=~/.npm-global/bin:$PATH
+      source ~/.profile
+  

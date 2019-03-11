@@ -1,6 +1,6 @@
 ---
 - hosts: develop_machine
-
+  become: true
   tasks:
   - name: Add oracle jdk 8 repository
     apt_repository: repo='ppa:webupd8team/java'

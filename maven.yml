@@ -1,6 +1,6 @@
 ---
 - hosts: develop_machine
-
+  become: true
   tasks:
 
   - name: Download maven 

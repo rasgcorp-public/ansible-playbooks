@@ -1,5 +1,6 @@
 ---
 - hosts: develop_machine
+  become: yes
   gather_facts: false
   tasks:
 
